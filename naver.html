@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>네이버 검색 결과</title>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div id="mContainer">
+        <div class="wrap_content component">
+            <h3 class="api-title">"메가공무원" 네이버 검색결과 API - Real</h3>
+            <ul id="search_results"></ul>
+        </div>
+    </div>
+    <script>
+        const query = "메가공무원"; // 검색어
+        const displayCount = 10; 
+        let start = 1;
+        let isLoading = false;
+
+        function loadingUI() {
+          console.log("Loading...");
+        }
+
+        function closeLoading() {
+          console.log("Loading finished.");
+        }
+      
+        function fetchResults() {
+          if (isLoading) return;
+          isLoading = true;
+          loadingUI();
+
+          $.ajax({
+            url: `http://10.70.6.134:3000/search`, // Express 서버 주소
+            method: "GET",
+            data: {
+              query: query,
+              display: displayCount,
+              start: start,
+            },
+            success: function (data) {
+              console.log("API Response:", data);
+              const items = data.items;
+              if (items && items.length > 0) {
+                items.forEach((item) => {
+                  const resultHtml = `
+                    <li>
+                      <a href="${item.link}" target="_blank">${item.title}</a>
+                      <p>${item.description}</p>
+                    </li>
+                  `;
+                  $("#search_results").append(resultHtml);
+                });
+                start += displayCount;
+                closeLoading();
+              } else {
+                console.log("No items found.");
+                $(window).off("scroll");
+              }
+            },
+            error: function (xhr, status, error) {
+              console.error("API 호출 실패:", error);
+            },
+            complete: function () {
+              isLoading = false;
+              closeLoading();
+            },
+          });
+        }
+      
+        fetchResults();
+      
+        $(window).on("scroll", function () {
+          if ($(window).scrollTop() + $(window).height() >= $(document).height() - 100) {
+            fetchResults();
+          }
+        });
+    </script>
+</body>
+</html>
