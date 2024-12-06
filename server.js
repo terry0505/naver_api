@@ -1,4 +1,4 @@
-require('dotenv').config(); // dotenv ºÒ·¯¿À±â
+require('dotenv').config(); // dotenv ë¶ˆëŸ¬ì˜¤ê¸°
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
@@ -6,43 +6,52 @@ const path = require('path');
 
 const app = express();
 
-// ³×ÀÌ¹ö API ÀÎÁõ Á¤º¸ (È¯°æ º¯¼ö¿¡¼­ ºÒ·¯¿À±â)
+// ë„¤ì´ë²„ API ì¸ì¦ ì •ë³´
 const clientId = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
 
-// CORS ¼³Á¤
-app.use(cors());
+console.log('CLIENT_ID:', clientId);
+console.log('CLIENT_SECRET:', clientSecret);
 
-// Á¤Àû ÆÄÀÏ Á¦°ø (naver.html ¼­ºù)
+// CORS ì„¤ì •
+app.use(cors({
+  origin: 'http://10.70.6.134:3000',
+  methods: ['GET'],
+}));
+
+// ì •ì  íŒŒì¼ ì œê³µ (naver.html ì„œë¹™)
 app.use(express.static(path.join(__dirname)));
 
-// °Ë»ö API ¿£µåÆ÷ÀÎÆ®
+// ê²€ìƒ‰ API ì—”ë“œí¬ì¸íŠ¸
 app.get('/search', async (req, res) => {
-  const { query, display = 10, start = 1 } = req.query;
+    const { query, display = 10, start = 1 } = req.query;
+  
+    console.log('Received query:', query); // ì¶”ê°€ ë¡œê·¸
+  
+    if (!query) {
+      return res.status(400).json({ message: 'Query parameter is required.' });
+    }
+  
+    try {
+      const response = await axios.get('https://openapi.naver.com/v1/search/blog.json', {
+        params: { query, display, start },
+        headers: {
+          'X-Naver-Client-Id': clientId,
+          'X-Naver-Client-Secret': clientSecret,
+        },
+      });
+  
+      res.json(response.data);
+    } catch (error) {
+      console.error('Error calling Naver API:', error.response ? error.response.data : error.message);
+      res.status(500).json({
+        message: 'Internal Server Error',
+        error: error.response ? error.response.data : error.message,
+      });
+    }
+  });
 
-  try {
-    // ³×ÀÌ¹ö API È£Ãâ
-    const response = await axios.get('https://openapi.naver.com/v1/search/webkr.json', {
-      params: {
-        query,
-        display,
-        start,
-      },
-      headers: {
-        'X-Naver-Client-Id': clientId,
-        'X-Naver-Client-Secret': clientSecret,
-      },
-    });
-
-    // API °á°ú¸¦ Å¬¶óÀÌ¾ðÆ®¿¡ ¹ÝÈ¯
-    res.json(response.data);
-  } catch (error) {
-    console.error('Error calling Naver API:', error.message);
-    res.status(500).send('API È£Ãâ ½ÇÆÐ');
-  }
-});
-
-// ¼­¹ö Æ÷Æ® ¼³Á¤
+// ì„œë²„ í¬íŠ¸ ì„¤ì •
 const port = 3000;
 app.listen(port, () => {
   console.log(`Server is running on http://10.70.6.134:${port}`);

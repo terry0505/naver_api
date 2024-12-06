@@ -15,63 +15,51 @@
   </div>
 
   <script>
-    const query = "메가공무원"; // 검색어
-    const displayCount = 10; 
-    let start = 1;
-    let isLoading = false;
+const query = "메가공무원"; // 검색어
+const displayCount = 10; 
+let start = 1;
+let isLoading = false;
 
-    function loadingUI() {
-      console.log("Loading...");
-    }
+function fetchResults() {
+  if (isLoading) return;
+  isLoading = true;
 
-    function closeLoading() {
-      console.log("Loading finished.");
-    }
+  $.ajax({
+    url: `http://10.70.6.134:3000/search`,
+    method: "GET",
+    data: {
+      query: query, // 검색어 전달
+      display: displayCount,
+      start: start,
+    },
+    success: function (data) {
+      console.log("API Response:", data);
+      const items = data.items;
+      if (items && items.length > 0) {
+        items.forEach((item) => {
+          const resultHtml = `
+            <li>
+              <a href="${item.link}" target="_blank">${item.title.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</a>
+              <p>${item.description}</p>
+            </li>
+          `;
+          $("#search_results").append(resultHtml);
+        });
+        start += displayCount;
+      } else {
+        console.log("No items found.");
+      }
+    },
+    error: function (xhr, status, error) {
+      console.error("API 호출 실패:", error);
+    },
+    complete: function () {
+      isLoading = false;
+    },
+  });
+}
 
-    function fetchResults() {
-      if (isLoading) return;
-      isLoading = true;
-      loadingUI();
-
-      $.ajax({
-        url: `http://10.70.6.134:3000/search`, // Express 서버 주소
-        method: "GET",
-        data: {
-          query: query,
-          display: displayCount,
-          start: start,
-        },
-        success: function (data) {
-          console.log("API Response:", data);
-          const items = data.items;
-          if (items && items.length > 0) {
-            items.forEach((item) => {
-              const resultHtml = `
-                <li>
-                  <a href="${item.link}" target="_blank">${item.title}</a>
-                  <p>${item.description}</p>
-                </li>
-              `;
-              $("#search_results").append(resultHtml);
-            });
-            start += displayCount;
-            closeLoading();
-          } else {
-            console.log("No items found.");
-            $(window).off("scroll");
-          }
-        },
-        error: function (xhr, status, error) {
-          console.error("API 호출 실패:", error);
-        },
-        complete: function () {
-          isLoading = false;
-          closeLoading();
-        },
-      });
-    }
-
-    fetchResults();
+fetchResults();
 
     $(window).on("scroll", function () {
       if ($(window).scrollTop() + $(window).height() >= $(document).height() - 100) {
