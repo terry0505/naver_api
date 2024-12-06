@@ -1,82 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>³×ÀÌ¹ö °Ë»ö °á°ú</title>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ë„¤ì´ë²„ ê²€ìƒ‰ ê²°ê³¼</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <div id="mContainer">
-        <div class="wrap_content component">
-            <h3 class="api-title">"¸Ş°¡°ø¹«¿ø" ³×ÀÌ¹ö °Ë»ö°á°ú API - Real</h3>
-            <ul id="search_results"></ul>
-        </div>
+  <div id="mContainer">
+    <div class="wrap_content component">
+      <h3 class="api-title">"ë©”ê°€ê³µë¬´ì›" ë„¤ì´ë²„ ê²€ìƒ‰ê²°ê³¼ API - Real</h3>
+      <ul id="search_results"></ul>
     </div>
-    <script>
-        const query = "¸Ş°¡°ø¹«¿ø"; // °Ë»ö¾î
-        const displayCount = 10; 
-        let start = 1;
-        let isLoading = false;
+  </div>
 
-        function loadingUI() {
-          console.log("Loading...");
-        }
+  <script>
+    const query = "ë©”ê°€ê³µë¬´ì›"; // ê²€ìƒ‰ì–´
+    const displayCount = 10; 
+    let start = 1;
+    let isLoading = false;
 
-        function closeLoading() {
-          console.log("Loading finished.");
-        }
-      
-        function fetchResults() {
-          if (isLoading) return;
-          isLoading = true;
-          loadingUI();
+    function loadingUI() {
+      console.log("Loading...");
+    }
 
-          $.ajax({
-            url: `http://10.70.6.134:3000/search`, // Express ¼­¹ö ÁÖ¼Ò
-            method: "GET",
-            data: {
-              query: query,
-              display: displayCount,
-              start: start,
-            },
-            success: function (data) {
-              console.log("API Response:", data);
-              const items = data.items;
-              if (items && items.length > 0) {
-                items.forEach((item) => {
-                  const resultHtml = `
-                    <li>
-                      <a href="${item.link}" target="_blank">${item.title}</a>
-                      <p>${item.description}</p>
-                    </li>
-                  `;
-                  $("#search_results").append(resultHtml);
-                });
-                start += displayCount;
-                closeLoading();
-              } else {
-                console.log("No items found.");
-                $(window).off("scroll");
-              }
-            },
-            error: function (xhr, status, error) {
-              console.error("API È£Ãâ ½ÇÆĞ:", error);
-            },
-            complete: function () {
-              isLoading = false;
-              closeLoading();
-            },
-          });
-        }
-      
-        fetchResults();
-      
-        $(window).on("scroll", function () {
-          if ($(window).scrollTop() + $(window).height() >= $(document).height() - 100) {
-            fetchResults();
+    function closeLoading() {
+      console.log("Loading finished.");
+    }
+
+    function fetchResults() {
+      if (isLoading) return;
+      isLoading = true;
+      loadingUI();
+
+      $.ajax({
+        url: `http://10.70.6.134:3000/search`, // Express ì„œë²„ ì£¼ì†Œ
+        method: "GET",
+        data: {
+          query: query,
+          display: displayCount,
+          start: start,
+        },
+        success: function (data) {
+          console.log("API Response:", data);
+          const items = data.items;
+          if (items && items.length > 0) {
+            items.forEach((item) => {
+              const resultHtml = `
+                <li>
+                  <a href="${item.link}" target="_blank">${item.title}</a>
+                  <p>${item.description}</p>
+                </li>
+              `;
+              $("#search_results").append(resultHtml);
+            });
+            start += displayCount;
+            closeLoading();
+          } else {
+            console.log("No items found.");
+            $(window).off("scroll");
           }
-        });
-    </script>
+        },
+        error: function (xhr, status, error) {
+          console.error("API í˜¸ì¶œ ì‹¤íŒ¨:", error);
+        },
+        complete: function () {
+          isLoading = false;
+          closeLoading();
+        },
+      });
+    }
+
+    fetchResults();
+
+    $(window).on("scroll", function () {
+      if ($(window).scrollTop() + $(window).height() >= $(document).height() - 100) {
+        fetchResults();
+      }
+    });
+  </script>
 </body>
 </html>
